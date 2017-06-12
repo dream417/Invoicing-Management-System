@@ -13,7 +13,10 @@ import javax.swing.JOptionPane;
 
 import com.lzw.Item;
 import com.lzw.dao.model.TbGysinfo;
+import com.lzw.dao.model.TbJsr;
 import com.lzw.dao.model.TbKhinfo;
+import com.lzw.dao.model.TbKucun;
+import com.lzw.dao.model.TbSpinfo;
 
 public class Dao {
 
@@ -117,7 +120,142 @@ public class Dao {
 		return info;
 	}
 	
+	//读取经手人
+	public static TbJsr getJsr(String name,String password){
+		TbJsr user = new TbJsr();
+		ResultSet rs = findForResultSet("select * from tb_jsr where name='"+name+"'");
+		try {
+			if(rs.next()){
+				user.setSex(name);
+				user.setAge(rs.getString("pass"));
+				if(user.getAge().equals(password)){
+					user.setName(rs.getString("name"));
+					user.setTel(rs.getString("quan"));
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return user;
+	}
 	
+	//执行指定查询
+	public static ResultSet query(String QueryStr){
+		ResultSet set = findForResultSet(QueryStr);
+		return set;
+	}
+	
+	//执行删除
+	public static int delete(String sql){
+		return update(sql);
+	}
+	
+	//添加客户信息的方法
+	public static boolean addKeHu(TbKhinfo khinfo){
+		if(khinfo == null)
+			return false;
+		return insert("insert tb_khinfo values('" + khinfo.getId()+"','"
+				+ khinfo.getKhname() + "','" + khinfo.getJian() + "','"
+				+ khinfo.getAddress() + "','" + khinfo.getBianma() + "','"
+				+ khinfo.getTel() + "','" + khinfo.getFax() + "','"
+				+ khinfo.getLian() + "','" + khinfo.getLtel() + "','"
+				+ khinfo.getMail() + "','" + khinfo.getYinhang() + "','"
+				+ khinfo.getHao() + "','");
+	}
+	
+	//修改客户信息的方法
+	public static int updateKeHu(TbKhinfo khinfo){
+		return update("update tb_khinfo set jian='" + khinfo.getJian()
+				+ "',address='" + khinfo.getAddress() + "',bianma='"
+				+ khinfo.getBianma() + "',tel='" + khinfo.getTel() + "',fax='"
+				+ khinfo.getFax() + "',lian='" + khinfo.getLian() + "',ltel='"
+				+ khinfo.getLtel() + "',mail='" + khinfo.getMail() + "',xinhang='"
+				+ khinfo.getYinhang() + "',hao='" + khinfo.getHao() + "' where id='"
+				+ khinfo.getId() + "'");
+	}
+	
+	//修改库存的方法
+	public static int updateKucunDj(TbKucun kcInfo){
+		return update("update tb_kucun set dj=" +kcInfo.getDj()
+				+ "where id='" + kcInfo.getId() + "'");
+	}
+	
+	//修改供应商信息的方法
+	public static int updateGys(TbGysinfo gysInfo){
+		return update("update tb_gysindo set jc='"+gysInfo.getJc()
+				+ "',address='" + gysInfo.getAddress() + "',bianma='"
+				+ gysInfo.getBianma() + "',tel='" + gysInfo.getTel()
+				+ "',fax='" + gysInfo.getFax() + "',lian='" + gysInfo.getLian()
+				+ "',ltel='" + gysInfo.getLtel() + "',mail='"
+				+ gysInfo.getMail() + "',yh='" + gysInfo.getYh()
+				+ "' where id='" + gysInfo.getId() + "'");
+	}
+	
+	//添加供应商信息的方法
+	public static boolean addGys(TbGysinfo gysInfo){
+		if(gysInfo == null)
+			return false;
+		return insert("insert tb_gysindo values('" + gysInfo.getId() + "','"
+				+ gysInfo.getName() + "','" + gysInfo.getJc() + "','"
+				+ gysInfo.getAddress() + "','" + gysInfo.getBianma() + "','"
+				+ gysInfo.getTel() + "','" + gysInfo.getFax() + "','"
+				+ gysInfo.getLian() + "','" + gysInfo.getLtel() + "','"
+				+ gysInfo.getMail() + "','" + gysInfo.getYh() + "')");
+	}
+	
+	//添加商品
+	public static boolean addSp(TbSpinfo spInfo){
+		if(spInfo == null)
+			return false;
+		return insert("insert tb_spinfo values('" + spInfo.getId() + "','"
+				+ spInfo.getSpname() + "','" + spInfo.getJc() + "','"
+				+ spInfo.getCd() + "','" + spInfo.getDw() + "','"
+				+ spInfo.getGg() + "','" + spInfo.getBz() + "','"
+				+ spInfo.getPh() + "','" + spInfo.getPzwh() + "','"
+				+ spInfo.getMemo() + "','" + spInfo.getGysname() + "')");
+		
+	}
+	
+	//更新商品
+	public static int updateSp(TbSpinfo spInfo){
+		return update("update tb_spinfo set jc='" + spInfo.getJc() + "',cd='"
+				+ spInfo.getCd() + "',dw='" + spInfo.getDw() + "',gg='"
+				+ spInfo.getGg() + "',bz='" + spInfo.getBz() + "',ph'"
+				+ spInfo.getPh() + "',pzwh='" + spInfo.getPzwh() + "',memo='"
+				+ spInfo.getMemo() + "',gysname='" + spInfo.getGysname()
+				+ "' where id='" + spInfo.getId() + "'");
+	}
+	
+	
+	
+	//添加数据
+	private static boolean insert(String sql) {
+		boolean result = false;
+		// TODO Auto-generated method stub
+		Statement stmt;
+		try {
+			stmt = conn.createStatement();
+			result = stmt.execute(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	//更新数据
+	private static int update(String sql) {
+		// TODO Auto-generated method stub
+		int result = 0;
+		try{
+			Statement stmt = conn.createStatement();
+			result = stmt.executeUpdate(sql);
+		}catch (SQLException e){
+			e.printStackTrace();
+		}
+		return result;
+	}
 	
 	public static List findForList(String sql){
 		List<List> list = new ArrayList<List>();

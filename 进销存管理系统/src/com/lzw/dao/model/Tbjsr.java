@@ -1,6 +1,6 @@
 package com.lzw.dao.model;
 
-public class Tbjsr {
+public class TbJsr {
 	private String name;
 	private String sex;
 	private String age;
