@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.sql.SQLException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -15,6 +16,8 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+
+import com.lzw.dao.Dao;
 
 public class LoginDialog extends JFrame {
 
@@ -103,7 +106,16 @@ public class LoginDialog extends JFrame {
 					// TODO Auto-generated method stub
 					userStr = userField.getText();
 					String passStr = new String(passwordField.getPassword());
-					JOptionPane.showMessageDialog(LoginDialog.this,"您输入的用户名是："+userStr+",密码是："+passStr);
+					try {
+						if(Dao.checkLogin(userStr, passStr))
+							JOptionPane.showMessageDialog(LoginDialog.this,"登录成功！");
+					} catch (HeadlessException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 				}
 					
 			});

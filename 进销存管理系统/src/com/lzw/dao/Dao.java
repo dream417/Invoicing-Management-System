@@ -1,13 +1,16 @@
 package com.lzw.dao;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JOptionPane;
 
@@ -16,7 +19,13 @@ import com.lzw.dao.model.TbGysinfo;
 import com.lzw.dao.model.TbJsr;
 import com.lzw.dao.model.TbKhinfo;
 import com.lzw.dao.model.TbKucun;
+import com.lzw.dao.model.TbRukuDetail;
+import com.lzw.dao.model.TbRukuMain;
+import com.lzw.dao.model.TbSellDetail;
+import com.lzw.dao.model.TbSellMain;
 import com.lzw.dao.model.TbSpinfo;
+import com.lzw.dao.model.TbXsthDetail;
+import com.lzw.dao.model.TbXsthMain;
 
 public class Dao {
 
@@ -227,8 +236,260 @@ public class Dao {
 				+ "' where id='" + spInfo.getId() + "'");
 	}
 	
+	// 读取商品信息
+	public static TbSpinfo getSpInfo(Item item) {
+		String where = "spname='" + item.getName() + "'";
+		if (item.getId() != null)
+			where = "id='" + item.getId() + "'";
+		ResultSet rs = findForResultSet("select * from tb_spinfo where "
+				+ where);
+		TbSpinfo spInfo = new TbSpinfo();
+		try {
+			if (rs.next()) {
+				spInfo.setId(rs.getString("id").trim());
+				spInfo.setBz(rs.getString("bz").trim());
+				spInfo.setCd(rs.getString("cd").trim());
+				spInfo.setDw(rs.getString("dw").trim());
+				spInfo.setGg(rs.getString("gg").trim());
+				spInfo.setGysname(rs.getString("gysname").trim());
+				spInfo.setJc(rs.getString("jc").trim());
+				spInfo.setMemo(rs.getString("memo").trim());
+				spInfo.setPh(rs.getString("ph").trim());
+				spInfo.setPzwh(rs.getString("pzwh").trim());
+				spInfo.setSpname(rs.getString("spname").trim());
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return spInfo;
+	}
+
+	// 获取所有商品信息
+	public static List getSpInfos() {
+		List list = findForList("select * from tb_spinfo");
+		return list;
+	}
 	
+	// 获取库存商品信息
+	public static TbKucun getKucun(Item item) {
+		String where = "spname='" + item.getName() + "'";
+		if (item.getId() != null)
+			where = "id='" + item.getId() + "'";
+		ResultSet rs = findForResultSet("select * from tb_kucun where " + where);
+		TbKucun kucun = new TbKucun();
+		try {
+			if (rs.next()) {
+				kucun.setId(rs.getString("id"));
+				kucun.setSpname(rs.getString("spname"));
+				kucun.setJc(rs.getString("jc"));
+				kucun.setBz(rs.getString("bz"));
+				kucun.setCd(rs.getString("cd"));
+				kucun.setDj(rs.getDouble("dj"));
+				kucun.setDw(rs.getString("dw"));
+				kucun.setGg(rs.getString("gg"));
+				kucun.setKcsl(rs.getInt("kcsl"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return kucun;
+	}
 	
+	// 获取入库单的最大ID，即最大入库票号
+	public static String getRuKuMainMaxId(Date date) {
+		return getMainTypeTableMaxId(date, "tb_ruku_main", "RK", "rkid");
+	}
+
+	// 在事务中添加入库信息
+	public static boolean insertRukuInfo(TbRukuMain ruMain) {
+		try {
+			boolean autoCommit = conn.getAutoCommit();
+			conn.setAutoCommit(false);
+			// 添加入库主表记录
+			insert("insert into tb_ruku_main values('" + ruMain.getRkId()
+					+ "','" + ruMain.getPzs() + "'," + ruMain.getJe() + ",'"
+					+ ruMain.getYsjl() + "','" + ruMain.getGysname() + "','"
+					+ ruMain.getRkdate() + "','" + ruMain.getCzy() + "','"
+					+ ruMain.getJsr() + "','" + ruMain.getJsfs() + "')");
+			Set<TbRukuDetail> rkDetails = ruMain.getTabRukuDetails();
+			for (Iterator<TbRukuDetail> iter = rkDetails.iterator(); iter
+					.hasNext();) {
+				TbRukuDetail details = iter.next();
+				// 添加入库详细表记录
+				insert("insert into tb_ruku_detail values('" + ruMain.getRkId()
+						+ "','" + details.getTbSpinfo() + "',"
+						+ details.getDj() + "," + details.getSl() + ")");
+				// 添加或修改库存表记录
+				Item item = new Item();
+				item.setId(details.getTbSpinfo());
+				TbSpinfo spInfo = getSpInfo(item);
+				if (spInfo.getId() != null && !spInfo.getId().isEmpty()) {
+					TbKucun kucun = getKucun(item);
+					if (kucun.getId() == null || kucun.getId().isEmpty()) {
+						insert("insert into tb_kucun values('" + spInfo.getId()
+								+ "','" + spInfo.getSpname() + "','"
+								+ spInfo.getJc() + "','" + spInfo.getCd()
+								+ "','" + spInfo.getGg() + "','"
+								+ spInfo.getBz() + "','" + spInfo.getDw()
+								+ "'," + details.getDj() + ","
+								+ details.getSl() + ")");
+					} else {
+						int sl = kucun.getKcsl() + details.getSl();
+						update("update tb_kucun set kcsl=" + sl + ",dj="
+								+ details.getDj() + " where id='"
+								+ kucun.getId() + "'");
+					}
+				}
+			}
+			conn.commit();
+			conn.setAutoCommit(autoCommit);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}		
+
+	// 获取退货最大ID
+	public static String getRkthMainMaxId(Date date) {
+		return getMainTypeTableMaxId(date, "tb_rkth_main", "RT", "rkthId");
+	}
+	
+	// 在事务中添加销售信息
+	public static boolean insertSellInfo(TbSellMain sellMain) {
+		try {
+			boolean autoCommit = conn.getAutoCommit();
+			conn.setAutoCommit(false);
+			// 添加销售主表记录
+			insert("insert into tb_sell_main values('" + sellMain.getSellId()
+					+ "','" + sellMain.getPzs() + "'," + sellMain.getJe()
+					+ ",'" + sellMain.getYsjl() + "','" + sellMain.getKhname()
+					+ "','" + sellMain.getXsdate() + "','" + sellMain.getCzy()
+					+ "','" + sellMain.getJsr() + "','" + sellMain.getJsfs()
+					+ "')");
+			Set<TbSellDetail> rkDetails = sellMain.getTbSellDetails();
+			for (Iterator<TbSellDetail> iter = rkDetails.iterator(); iter
+					.hasNext();) {
+				TbSellDetail details = iter.next();
+				// 添加销售详细表记录
+				insert("insert into tb_sell_detail values('"
+						+ sellMain.getSellId() + "','" + details.getSpid()
+						+ "'," + details.getDj() + "," + details.getSl() + ")");
+				// 修改库存表记录
+				Item item = new Item();
+				item.setId(details.getSpid());
+				TbSpinfo spInfo = getSpInfo(item);
+				if (spInfo.getId() != null && !spInfo.getId().isEmpty()) {
+					TbKucun kucun = getKucun(item);
+					if (kucun.getId() != null && !kucun.getId().isEmpty()) {
+						int sl = kucun.getKcsl() - details.getSl();
+						update("update tb_kucun set kcsl=" + sl + " where id='"
+								+ kucun.getId() + "'");
+					}
+				}
+			}
+			conn.commit();
+			conn.setAutoCommit(autoCommit);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}	
+
+	// 获得最大的销售退货编号
+	public static String getXsthMainMaxId(Date date) {
+		return getMainTypeTableMaxId(date, "tb_xsth_main", "XT", "xsthID");
+	}
+	
+	// 获得库存信息
+	public static List getKucunInfos() {
+		List list = findForList("select id,spname,dj,kcsl from tb_kucun");
+		return list;
+	}
+	
+	// 在事务中添加销售退货信息
+	public static boolean insertXsthInfo(TbXsthMain xsthMain) {
+		try {
+			boolean autoCommit = conn.getAutoCommit();
+			conn.setAutoCommit(false);
+			// 添加销售退货主表记录
+			insert("insert into tb_xsth_main values('" + xsthMain.getXsthId()
+					+ "','" + xsthMain.getPzs() + "'," + xsthMain.getJe()
+					+ ",'" + xsthMain.getYsjl() + "','" + xsthMain.getKhname()
+					+ "','" + xsthMain.getThdate() + "','" + xsthMain.getCzy()
+					+ "','" + xsthMain.getJsr() + "','" + xsthMain.getJsfs()
+					+ "')");
+			Set<TbXsthDetail> xsthDetails = xsthMain.getTbXsthDetails();
+			for (Iterator<TbXsthDetail> iter = xsthDetails.iterator(); iter
+					.hasNext();) {
+				TbXsthDetail details = iter.next();
+				// 添加销售退货详细表记录
+				insert("insert into tb_xsth_detail values('"
+						+ xsthMain.getXsthId() + "','" + details.getSpid()
+						+ "'," + details.getDj() + "," + details.getSl() + ")");
+				// 修改库存表记录
+				Item item = new Item();
+				item.setId(details.getSpid());
+				TbSpinfo spInfo = getSpInfo(item);
+				if (spInfo.getId() != null && !spInfo.getId().isEmpty()) {
+					TbKucun kucun = getKucun(item);
+					if (kucun.getId() != null && !kucun.getId().isEmpty()) {
+						int sl = kucun.getKcsl() + details.getSl();
+						update("update tb_kucun set kcsl=" + sl + " where id='"
+								+ kucun.getId() + "'");
+					}
+				}
+			}
+			conn.commit();
+			conn.setAutoCommit(autoCommit);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+	
+	// 添加用户
+	public static int addJsr(TbJsr jsr) {
+		String sql = "insert tb_jsr values('" + jsr.getName() + "','"
+				+ jsr.getSex() + "','" + jsr.getAge() + "','" + jsr.getTel()
+				+ "',1)";
+		System.out.println(sql);
+		return update(sql);
+	}
+	
+	public static List getJsrs() {
+		List list = findForList("select * from tb_jsr where enable=1");
+		return list;
+	}
+	
+	// 修改用户方法
+	public static int modifyPassword(String oldPass, String pass) {
+		return update("update tb_userlist set pass='" + pass + "' where pass='"
+				+ oldPass + "'");
+	}
+	
+	// 获取更类主表最大ID
+	private static String getMainTypeTableMaxId(Date date, String table,
+			String idChar, String idName) {
+		String dateStr = date.toString().replace("-", "");
+		String id = idChar + dateStr;
+		String sql = "select max(" + idName + ") from " + table + " where "
+				+ idName + " like '" + id + "%'";
+		ResultSet set = query(sql);
+		String baseId = null;
+		try {
+			if (set.next())
+				baseId = set.getString(1);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		baseId = baseId == null ? "000" : baseId.substring(baseId.length() - 3);
+		int idNum = Integer.parseInt(baseId) + 1;
+		id += String.format("%03d", idNum);
+		return id;
+	}
+
 	//添加数据
 	private static boolean insert(String sql) {
 		boolean result = false;
@@ -294,5 +555,36 @@ public class Dao {
 			e.printStackTrace();
 		}
 		return rs;
+	}
+	
+	// 获取用户对象的方法
+	public static TbJsr getUser(Item item) {
+		String where = "username='" + item.getName() + "'";
+		if (item.getId() != null)
+			where = "name='" + item.getId() + "'";
+		ResultSet rs = findForResultSet("select * from tb_userlist where "
+				+ where);
+		TbJsr user = new TbJsr();
+		try {
+			if (rs.next()) {
+				user.setName(rs.getString("name").trim());
+				user.setSex(rs.getString("username").trim());
+				user.setAge(rs.getString("pass").trim());
+				user.setTel(rs.getString("quan").trim());
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return user;
+	}
+	
+	// 验证登录
+	public static boolean checkLogin(String userStr, String passStr)
+			throws SQLException {
+		ResultSet rs = findForResultSet("select * from tb_userlist where name='"
+				+ userStr + "' and pass='" + passStr + "'");
+		if (rs == null)
+			return false;
+		return rs.next();
 	}
 }
