@@ -1,13 +1,23 @@
 package com.lzw;
 
+import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.ImageIcon;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
@@ -131,17 +141,91 @@ public class MenuBar extends JMenuBar {
 
 	public JMenuItem getGuanyu_Item() {
 		// TODO Auto-generated method stub
-		return null;
+		if(guanyu_Item == null){
+			guanyu_Item = new JMenuItem();
+			guanyu_Item.setText("关于");
+			guanyu_Item.setIcon(new ImageIcon(getClass().getResource("/res/icon/guanyu.png")));
+			URL url = DesktopPanel.class.getResource("/res/about.jpg");
+			ImageIcon aboutImage = new ImageIcon(url);
+			final JLabel imgLabel = new JLabel(aboutImage);
+			imgLabel.setVisible(false);
+			desktopPanel.add(imgLabel);
+			desktopPanel.setLayer(imgLabel, Integer.MAX_VALUE);
+			guanyu_Item.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					// TODO Auto-generated method stub
+					int dw = desktopPanel.getWidth();
+					int dh = desktopPanel.getHeight();
+					imgLabel.setBounds((dw-500)/2, (dh - 350)/2, 500, 350);
+					imgLabel.setVisible(true);
+				}
+			});
+			imgLabel.addMouseListener(new MouseAdapter() {
+
+				@Override
+				public void mouseClicked(MouseEvent arg0) {
+					// TODO Auto-generated method stub
+					imgLabel.setVisible(false);
+				}
+			});
+		}
+		return guanyu_Item;
 	}
 
 	public JMenuItem getBugItem() {
 		// TODO Auto-generated method stub
-		return null;
+		if(bugItem == null){
+			bugItem = new JMenuItem();
+			bugItem.setText("联系技术支持");
+			bugItem.setIcon(new ImageIcon(getClass().getResource("/res/icon/jizhu_zhichi.png")));
+			bugItem.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// TODO Auto-generated method stub
+					if(Desktop.isDesktopSupported()){
+						Desktop desktop = Desktop.getDesktop();
+						try {
+							URI uri = new URI("mailto:tmoonbook@sina.com");
+							desktop.mail(uri);
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+				}
+			});
+		}
+		return bugItem;
 	}
 
 	public JMenuItem getFangwen_wangzhanItem() {
 		// TODO Auto-generated method stub
-		return null;
+		if(fangwen_wangzhanItem == null){
+			fangwen_wangzhanItem = new JMenuItem();
+			fangwen_wangzhanItem.setText("访问技术网站");
+			fangwen_wangzhanItem.setIcon(new ImageIcon(getClass().getResource("/res/icon/jishu_wangzhan.png")));
+			fangwen_wangzhanItem.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// TODO Auto-generated method stub
+					if(Desktop.isDesktopSupported()){
+						Desktop desktop = Desktop.getDesktop();
+						try {
+							URL url = new URL("http://www.mrbccd.com");
+							desktop.browse(url.toURI());
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+				}
+			});
+		}
+		return fangwen_wangzhanItem;
 	}
 
 	public JMenu getChuang_kouMenu() {
