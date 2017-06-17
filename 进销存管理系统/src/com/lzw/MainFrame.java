@@ -1,20 +1,15 @@
 package com.lzw;
 
-import java.awt.BorderLayout;
-import java.awt.Cursor;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.MenuBar;
-import java.sql.Date;
+import static java.awt.BorderLayout.*;
+import static javax.swing.border.BevelBorder.*;
+import java.awt.*;
 
-import javax.swing.BorderFactory;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
+import javax.swing.*;
+
+import java.util.Date;
 
 import org.omg.CORBA.INITIALIZE;
+
 
 public class MainFrame extends JFrame {
 
@@ -27,7 +22,7 @@ public class MainFrame extends JFrame {
 	private JLabel stateLabel = null;
 	private JLabel nameLabel = null;
 	private JLabel nowDateLabel = null;
-	private JSeparator jSeparator = null;
+	private JSeparator jSeparator1 = null;
 	private static JLabel czyStateLabel = null;
 	private JSeparator jSeparator2 = null;
 	
@@ -36,7 +31,7 @@ public class MainFrame extends JFrame {
 			toolBar = new ToolBar(getFrameMenuBar());
 			toolBar.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		}
-		return toorBar;
+		return toolBar;
 	}
 	
 	private MenuBar getFrameMenuBar(){
@@ -53,12 +48,12 @@ public class MainFrame extends JFrame {
 		return desktopPane;
 	}
 	
-	private Jpanel getStatePanel(){
+	private JPanel getStatePanel(){
 		if(statePanel == null){
 			GridBagConstraints gridBagConstraints6 = new GridBagConstraints();
 			gridBagConstraints6.gridx = 2;
 			gridBagConstraints6.fill = GridBagConstraints.VERTICAL;
-			gridBagConstraints6.inserts = new Inserts(0,5,0,5);
+			gridBagConstraints6.insets = new Insets(0,5,0,5);
 			gridBagConstraints6.gridy = 0;
 			
 			GridBagConstraints gridBagConstraints4 = new GridBagConstraints();
@@ -73,7 +68,7 @@ public class MainFrame extends JFrame {
 			
 			GridBagConstraints gridBagConstraints11 = new GridBagConstraints();
 			gridBagConstraints11.gridx = 5;
-			gridBagConstraints11.insets new Insets(0, 5, 0, 5);
+			gridBagConstraints11.insets = new Insets(0, 5, 0, 5);
 			gridBagConstraints11.gridy = 0;
 			nowDateLabel = new JLabel();
 			Date now = new Date();
@@ -82,7 +77,7 @@ public class MainFrame extends JFrame {
 			GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
 			gridBagConstraints2.gridx = 7;
 			gridBagConstraints2.weightx = 0.0;
-			gridBagConstraints2.fill = GridBagConstrains.NONE;
+			gridBagConstraints2.fill = GridBagConstraints.NONE;
 			gridBagConstraints2.gridy = 0;
 			nameLabel = new JLabel("吉林省铭泰xx有限公司");
 			
@@ -90,7 +85,7 @@ public class MainFrame extends JFrame {
 			gridBagConstraints1.gridx = 4;
 			gridBagConstraints1.fill = GridBagConstraints.VERTICAL;
 			gridBagConstraints1.weighty = 1.0;
-			gridBagConstraints1.inserts = new Insets(0, 5, 0, 5);
+			gridBagConstraints1.insets = new Insets(0, 5, 0, 5);
 			gridBagConstraints1.gridy = 0;
 			
 			GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -107,8 +102,8 @@ public class MainFrame extends JFrame {
 			statePanel.add(nameLabel,gridBagConstraints2);
 			statePanel.add(getJSeparator1(),gridBagConstraints3);
 			statePanel.add(nowDateLabel, gridBagConstraints11);
-			statePanel.add(getCzyStateLabel, gridBagConstraints4);
-			statePanel.add(getJSparator2(), gridBagConstraints6);
+			statePanel.add(getCzyStateLabel(), gridBagConstraints4);
+			statePanel.add(getJSeparator2(), gridBagConstraints6);
 		}
 		return statePanel;
 	}
@@ -128,26 +123,26 @@ public class MainFrame extends JFrame {
 		return stateLabel;
 	}
 	
-	private JSeparator getSeparator(){
+	private JSeparator getJSeparator(){
 		JSeparator jSeparator = new JSeparator();
 		jSeparator.setOrientation(JSeparator.VERTICAL);
 		return jSeparator;
 	}
 	
-	private JSeparator getSeparator1(){
+	private JSeparator getJSeparator1(){
 		if(jSeparator1 == null){
 			JSeparator jSeparator1 = new JSeparator();
 			jSeparator1.setOrientation(JSeparator.VERTICAL);
 		}
-		return jSeparator;
+		return jSeparator1;
 	}
 	
-	private JSeparator getSeparator2(){
+	private JSeparator getJSeparator2(){
 		if(jSeparator2 == null){
 			JSeparator jSeparator2 = new JSeparator();
 			jSeparator2.setOrientation(JSeparator.VERTICAL);
 		}
-		return jSeparator;
+		return jSeparator2;
 	}
 	
 	private JPanel getFrameContentPane(){
