@@ -10,6 +10,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -25,8 +26,13 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
+import javax.swing.event.InternalFrameListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
+
+import com.lzw.iframe.BackupAndRestore;
 
 public class MenuBar extends JMenuBar {
 
@@ -414,7 +420,20 @@ public class MenuBar extends JMenuBar {
 	
 	public JMenuItem getSHuju_beifenItem() {
 		// TODO Auto-generated method stub
-		return null;
+		if(shuju_beifenItem == null){
+			shuju_beifenItem = new JMenuItem();
+			shuju_beifenItem.setText("数据库备份与恢复");
+			shuju_beifenItem.setIcon(new ImageIcon(getClass().getResource("/res/icon/shujuku_beifen_huifu.png")));
+			shuju_beifenItem.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					// TODO Auto-generated method stub
+					createIFrame(shuju_beifenItem,BackupAndRestore.class);
+				}
+			});
+		}
+		return shuju_beifenItem;
 	}
 
 	public JMenuItem getMima_xiugaiItem() {
@@ -556,6 +575,54 @@ public class MenuBar extends JMenuBar {
 	public JMenuItem getJinhuo_tuihuoItem() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public JInternalFrame createIFrame(JMenuItem item,Class clazz) {
+		// TODO Auto-generated method stub
+		Constructor constructor = clazz.getConstructors()[0];
+		JInternalFrame iFrame = iFrames.get(item);
+		try{
+			if(iFrame == null ||iFrame.isClosed()){
+				iFrame = (JInternalFrame)constructor.newInstance(new Object[] {});
+				iFrames.put(item, iFrame);
+				iFrame.setFrameIcon(item.getIcon());
+				iFrame.setLocation(nextFrameX, nextFrameY);
+				int frameH = iFrame.getPreferredSize().height;
+				int panelH = iFrame.getContentPane().getPreferredSize().height;
+				int fSpacing = frameH - panelH;
+				nextFrameX += fSpacing;
+				nextFrameY += fSpacing;
+				if(nextFrameX + iFrame.getWidth() > desktopPanel.getWidth())
+					nextFrameX = 0;
+				if(nextFrameY + iFrame.getHeight() > desktopPanel.getHeight())
+					nextFrameY = 0;
+				desktopPanel.add(iFrame);
+				iFrame.setResizable(false);
+				iFrame.setMaximizable(false);
+				iFrame.setVisible(true);
+			}
+			iFrame.setSelected(true);
+			stateLabel.setText(iFrame.getTitle());
+			iFrame.addInternalFrameListener(new InternalFrameAdapter() {
+				
+				@Override
+				public void internalFrameActivated(InternalFrameEvent e) {
+					// TODO Auto-generated method stub
+					super.internalFrameActivated(e);
+					JInternalFrame frame = e.getInternalFrame();
+					stateLabel.setText(frame.getTitle());
+				}
+				
+				@Override
+				public void internalFrameDeactivated(InternalFrameEvent e) {
+					// TODO Auto-generated method stub
+					stateLabel.setText("没有选择窗口");
+				}
+			});
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return iFrame;
 	}
 
 }
