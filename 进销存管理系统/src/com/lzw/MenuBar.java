@@ -287,24 +287,114 @@ public class MenuBar extends JMenuBar {
 
 	public JMenuItem getPingpuItem() {
 		// TODO Auto-generated method stub
-		return null;
+		if(pingpuItem == null){
+			pingpuItem = new JMenuItem();
+			pingpuItem.setText("窗口层叠");
+			pingpuItem.setIcon(new ImageIcon(getClass().getResource("/res/icon/chuangkou_pingpu.png")));
+			pingpuItem.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// TODO Auto-generated method stub
+					JInternalFrame[] allFrames = desktopPanel.getAllFrames();
+					int x =0, y = 0;
+					for(JInternalFrame iFrame : allFrames){
+						iFrame.setLocation(x, y);
+						try {
+							iFrame.setSelected(true);
+						} catch (PropertyVetoException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						int frameH = iFrame.getPreferredSize().height;
+						int panelH = iFrame.getContentPane().getPreferredSize().height;
+						int fSpacing = frameH - panelH;
+						x += fSpacing;
+						y += fSpacing;
+						if(x+getWidth()/2 > desktopPanel.getWidth())
+							x = 0;
+						if(y + getHeight() / 2 >desktopPanel.getHeight())
+							y = 0;						
+					}
+				}
+			});
+		}
+		return pingpuItem;
 	}
 
 
 	public JMenuItem getClassAllItem() {
 		// TODO Auto-generated method stub
-		return null;
+		if(closeAllItem == null){
+			closeAllItem = new JMenuItem();
+			closeAllItem.setText("全部关闭");
+			closeAllItem.setIcon(new ImageIcon(getClass().getResource("/res/icon/quanbu_guanbi.png")));
+			closeAllItem.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// TODO Auto-generated method stub
+					JInternalFrame[] allFrames = desktopPanel.getAllFrames();
+					for(JInternalFrame frame : allFrames){
+						frame.doDefaultCloseAction();
+					}
+				}
+			});
+		}
+		return closeAllItem;
 	}
 
 
 	public JMenuItem getAllIconItem() {
 		// TODO Auto-generated method stub
-		return null;
+		if(allIconItem == null){
+			allIconItem = new JMenuItem();
+			allIconItem.setText("全部最小化");
+			allIconItem.setIcon(new ImageIcon(getClass().getResource("/res/icon/quangu_zuixiaohua.png")));
+			allIconItem.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// TODO Auto-generated method stub
+					JInternalFrame[] allFrames = desktopPanel.getAllFrames();
+					for(JInternalFrame frame : allFrames){
+						try {
+							frame.setIcon(true);
+						} catch (PropertyVetoException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+				}
+			});
+		}
+		return allIconItem;
 	}
 	
 	public JMenuItem getAllResumeItem() {
 		// TODO Auto-generated method stub
-		return null;
+		if(allResumeItem == null){
+			allResumeItem = new JMenuItem();
+			allResumeItem.setText("全部还原");
+			allResumeItem.setIcon(new ImageIcon(getClass().getResource("/res/icon/quanbu_huanyuan.png")));
+			allResumeItem.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// TODO Auto-generated method stub
+					JInternalFrame[] allFrames = desktopPanel.getAllFrames();
+					for(JInternalFrame frame : allFrames){
+						try {
+							frame.setIcon(false);
+						} catch (PropertyVetoException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+				}
+			});
+		}
+		return allResumeItem;
 	}
 	
 	public JMenu getXitong_weihuMenu() {
